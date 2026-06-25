@@ -1,0 +1,640 @@
+{% extends 'base.html' %}
+
+{% block title %}O'ynash - Alkimiya UZ{% endblock %}
+
+{% block loading_screen %}
+<div class="game-loading-screen" id="loading-screen">
+    <div class="game-loading-content gl-game-loading-content">
+        <!-- Aylanuvchi elementlar halqasi -->
+        <div class="gl-orbit-system">
+            <div class="gl-orbit gl-orbit-1">
+                <span class="gl-orbit-el">🌍</span>
+            </div>
+            <div class="gl-orbit gl-orbit-2">
+                <span class="gl-orbit-el">💧</span>
+            </div>
+            <div class="gl-orbit gl-orbit-3">
+                <span class="gl-orbit-el">🔥</span>
+            </div>
+            <div class="gl-orbit gl-orbit-4">
+                <span class="gl-orbit-el">🌬️</span>
+            </div>
+            <div class="gl-center">
+                <div class="gl-center-glow"></div>
+                <span class="gl-center-icon">⚗️</span>
+            </div>
+        </div>
+
+        <!-- Sarlavha -->
+        <h1 class="gl-title">
+            <span class="gl-title-line1">ALKIMIYA</span>
+            <span class="gl-title-line2">UZ</span>
+        </h1>
+        <p class="gl-subtitle">Elementlarni birlashtiring, olamni yarating...</p>
+
+        <!-- Progress -->
+        <div class="gl-progress-container">
+            <div class="gl-progress-bar">
+                <div class="gl-progress-fill" id="loading-bar-fill"></div>
+                <div class="gl-progress-glow"></div>
+            </div>
+            <div class="gl-progress-info">
+                <span class="gl-progress-percent" id="loading-percent">0%</span>
+                <span class="gl-progress-label" id="loading-label">Yuklanmoqda...</span>
+            </div>
+        </div>
+
+        <!-- Fazalar -->
+        <div class="gl-phases" id="loading-phases">
+            <div class="gl-phase active" id="phase1">
+                <span class="gl-phase-dot"></span>
+                <span class="gl-phase-text">Elementlar yuklanmoqda</span>
+            </div>
+            <div class="gl-phase" id="phase2">
+                <span class="gl-phase-dot"></span>
+                <span class="gl-phase-text">Kombinatsiyalar tayyorlanmoqda</span>
+            </div>
+            <div class="gl-phase" id="phase3">
+                <span class="gl-phase-dot"></span>
+                <span class="gl-phase-text">Sirlar ochilmoqda</span>
+            </div>
+            <div class="gl-phase" id="phase4">
+                <span class="gl-phase-dot"></span>
+                <span class="gl-phase-text">Tayyor!</span>
+            </div>
+        </div>
+
+        <!-- Muallif -->
+        <div class="gl-author">
+            <span class="gl-author-icon">👨‍💻</span>
+            <span class="gl-author-text">Rasulov Oybek tomonidan yaratilgan</span>
+        </div>
+    </div>
+
+    <!-- Orqa fonda zarrachalar -->
+    <canvas class="gl-particles-canvas" id="gl-particles-canvas"></canvas>
+
+    <!-- Tebranuvchi elementlar -->
+    <div class="gl-floating-elements">
+        <span class="gl-float" style="--x: 8%; --y: 15%; --delay: 0s; --dur: 5s;">🔥</span>
+        <span class="gl-float" style="--x: 85%; --y: 20%; --delay: 1s; --dur: 6s;">💧</span>
+        <span class="gl-float" style="--x: 12%; --y: 75%; --delay: 2s; --dur: 5.5s;">🌍</span>
+        <span class="gl-float" style="--x: 80%; --y: 70%; --delay: 0.5s; --dur: 7s;">🌬️</span>
+        <span class="gl-float" style="--x: 50%; --y: 8%; --delay: 1.5s; --dur: 4.5s;">⭐</span>
+        <span class="gl-float" style="--x: 92%; --y: 45%; --delay: 3s; --dur: 6.5s;">✨</span>
+        <span class="gl-float" style="--x: 5%; --y: 50%; --delay: 2.5s; --dur: 5.2s;">💎</span>
+        <span class="gl-float" style="--x: 65%; --y: 88%; --delay: 0.8s; --dur: 6.8s;">🔮</span>
+    </div>
+</div>
+
+<script>
+(function() {
+    var loadingScreen = document.getElementById('loading-screen');
+    var loadingBar = document.getElementById('loading-bar-fill');
+    var loadingPercent = document.getElementById('loading-percent');
+    var loadingLabel = document.getElementById('loading-label');
+    var canvas = document.getElementById('gl-particles-canvas');
+    var ctx = canvas ? canvas.getContext('2d') : null;
+    var progress = 0;
+    var pageLoaded = false;
+    var minTimePassed = false;
+    var TOTAL_DURATION = 10000;
+    var CHECK_INTERVAL = 50;
+    var TOTAL_STEPS = TOTAL_DURATION / CHECK_INTERVAL;
+
+    // Canvas zarrachalari
+    var particles = [];
+    function resizeCanvas() {
+        if (!canvas) return;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    for (var i = 0; i < 80; i++) {
+        particles.push({
+            x: Math.random() * (canvas ? canvas.width : 1920),
+            y: Math.random() * (canvas ? canvas.height : 1080),
+            size: Math.random() * 3 + 1,
+            speedX: (Math.random() - 0.5) * 0.8,
+            speedY: (Math.random() - 0.5) * 0.8,
+            opacity: Math.random() * 0.5 + 0.2,
+            hue: Math.random() * 60 + 240
+        });
+    }
+
+    function animateParticles() {
+        if (!ctx || !canvas) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(function(p) {
+            p.x += p.speedX;
+            p.y += p.speedY;
+            if (p.x < 0) p.x = canvas.width;
+            if (p.x > canvas.width) p.x = 0;
+            if (p.y < 0) p.y = canvas.height;
+            if (p.y > canvas.height) p.y = 0;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fillStyle = 'hsla(' + p.hue + ', 80%, 70%, ' + p.opacity + ')';
+            ctx.fill();
+        });
+        if (loadingScreen && !loadingScreen.classList.contains('hide')) {
+            requestAnimationFrame(animateParticles);
+        }
+    }
+    animateParticles();
+
+    // Progress yangilash
+    var labels = [
+        'Asosiy elementlar tayyorlanmoqda...',
+        'Kombinatsiyalar hisoblanmoqda...',
+        'Sirli formulalar ochilmoqda...',
+        'Olam yaratilmoqda...',
+        'Tayyorlanmoqda...',
+        'Oxirgi tayyorgarlik...',
+        'Alkimyoga xush kelibsiz!'
+    ];
+
+    function updateProgress() {
+        progress += (100 / TOTAL_STEPS);
+        if (progress > 99) progress = 99;
+        loadingBar.style.width = progress + '%';
+        loadingPercent.textContent = Math.floor(progress) + '%';
+
+        if (progress < 20) {
+            loadingLabel.textContent = labels[0];
+        } else if (progress < 40) {
+            loadingLabel.textContent = labels[1];
+        } else if (progress < 60) {
+            loadingLabel.textContent = labels[2];
+        } else if (progress < 80) {
+            loadingLabel.textContent = labels[3];
+        } else if (progress < 95) {
+            loadingLabel.textContent = labels[4];
+        } else {
+            loadingLabel.textContent = labels[6];
+        }
+
+        if (progress > 20) {
+            document.getElementById('phase1').classList.remove('active');
+            document.getElementById('phase1').classList.add('done');
+            document.getElementById('phase2').classList.add('active');
+        }
+        if (progress > 50) {
+            document.getElementById('phase2').classList.remove('active');
+            document.getElementById('phase2').classList.add('done');
+            document.getElementById('phase3').classList.add('active');
+        }
+        if (progress > 85) {
+            document.getElementById('phase3').classList.remove('active');
+            document.getElementById('phase3').classList.add('done');
+            document.getElementById('phase4').classList.add('active');
+        }
+    }
+
+    var progressInterval = setInterval(updateProgress, CHECK_INTERVAL);
+
+    setTimeout(function() {
+        minTimePassed = true;
+        tryFinish();
+    }, TOTAL_DURATION);
+
+    window.addEventListener('load', function() {
+        pageLoaded = true;
+    });
+
+    function tryFinish() {
+        if ((pageLoaded && minTimePassed) || minTimePassed) {
+            clearInterval(progressInterval);
+            loadingBar.style.width = '100%';
+            loadingPercent.textContent = '100%';
+            loadingLabel.textContent = 'Alkimyoga xush kelibsiz!';
+            document.getElementById('phase4').classList.add('done');
+
+            setTimeout(function() {
+                loadingScreen.classList.add('hide');
+                setTimeout(function() { loadingScreen.remove(); }, 1200);
+            }, 800);
+        }
+    }
+})();
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="game-container" id="game-container">
+    <!-- Sidebar Menyu -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">⚗️</div>
+            <h2>Alkimiya UZ</h2>
+            <button class="sidebar-close" id="sidebar-close">&times;</button>
+        </div>
+
+        <div class="sidebar-menu">
+            <!-- Daraja -->
+            <div class="menu-card level-card">
+                <div class="level-info">
+                    <div class="level-badge" id="player-level">1</div>
+                    <div class="level-details">
+                        <h4>Daraja</h4>
+                        <div class="xp-bar"><div class="xp-bar-fill" id="xp-bar-fill"></div></div>
+                        <div class="xp-text" id="xp-text">0/50 XP</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kun Elementi -->
+            <div class="menu-card daily-card" id="daily-card">
+                <div class="daily-icon">🌟</div>
+                <div class="daily-info">
+                    <h4>Kun Elementi</h4>
+                    <div class="daily-element" id="daily-element">Yuklanmoqda...</div>
+                </div>
+                <button class="daily-btn" id="btn-daily">Olish</button>
+            </div>
+
+            <!-- Kunlik topshiriqlar -->
+            <div class="menu-section">
+                <h3>📋 Kunlik topshiriqlar</h3>
+                <div class="daily-tasks-list" id="daily-tasks-list">
+                    <!-- JS to'ldiradi -->
+                </div>
+            </div>
+
+            <!-- Asosiy tugmalar -->
+            <div class="menu-section">
+                <h3>🎮 Boshqaruv</h3>
+                <button class="menu-btn" id="btn-hint-menu">
+                    <span class="btn-icon">💡</span>
+                    <span class="btn-text">Maslahat olish</span>
+                    <span class="btn-badge" id="hint-count">3</span>
+                </button>
+                <button class="menu-btn" id="btn-random">
+                    <span class="btn-icon">🎲</span>
+                    <span class="btn-text">Tasodifiy element</span>
+                </button>
+                <button class="menu-btn" id="btn-combo">
+                    <span class="btn-icon">🔥</span>
+                    <span class="btn-text">Combo rejim</span>
+                    <span class="btn-badge combo-badge" id="combo-count">0x</span>
+                </button>
+                <button class="menu-btn accent" id="btn-speed">
+                    <span class="btn-icon">⏱️</span>
+                    <span class="btn-text">Tezlik mashqi</span>
+                </button>
+                <button class="menu-btn accent" id="btn-boss-menu">
+                    <span class="btn-icon">⚔️</span>
+                    <span class="btn-text">Boss urushi</span>
+                </button>
+                <button class="menu-btn accent" id="btn-tree">
+                    <span class="btn-icon">🧬</span>
+                    <span class="btn-text">Element daraxti</span>
+                </button>
+                <button class="menu-btn accent" id="btn-encyclopedia">
+                    <span class="btn-icon">📖</span>
+                    <span class="btn-text">Ensiklopediya</span>
+                </button>
+                <button class="menu-btn danger" id="btn-reset-menu">
+                    <span class="btn-icon">🔄</span>
+                    <span class="btn-text">Qayta boshlash</span>
+                </button>
+            </div>
+
+            <!-- Kunlik sovg'a va topshiriqlar -->
+            <div class="menu-section">
+                <h3>🎁 Sovg'alar va topshiriqlar</h3>
+                <button class="menu-btn accent" id="btn-daily-gift">
+                    <span class="btn-icon">🎁</span>
+                    <span class="btn-text">Kundalik sovg'a</span>
+                </button>
+                <div class="quests-list" id="quests-list">
+                </div>
+            </div>
+
+            <!-- Qo'shimcha -->
+            <div class="menu-section">
+                <h3>🛠️ Qo'shimcha</h3>
+                <button class="menu-btn accent" id="btn-screenshot">
+                    <span class="btn-icon">📸</span>
+                    <span class="btn-text">Screenshot</span>
+                </button>
+                <button class="menu-btn accent" id="btn-music">
+                    <span class="btn-icon">🎵</span>
+                    <span class="btn-text">Fon musiqasi</span>
+                </button>
+            </div>
+
+            <!-- Sozlamalar -->
+            <div class="menu-section">
+                <h3>⚙️ Sozlamalar</h3>
+                <div class="toggle-row">
+                    <span>🌙 Tungi rejim</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="toggle-dark">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-row">
+                    <span>🔊 Ovoz</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="toggle-sound" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-row">
+                    <span>✨ Animatsiyalar</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="toggle-animations" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Statistika -->
+            <div class="menu-section">
+                <h3>📊 Statistika</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-number" id="stat-discovered">0</div>
+                        <div class="stat-label">Kashf etilgan</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="stat-combos">0</div>
+                        <div class="stat-label">Birlashtirishlar</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="stat-streak">0</div>
+                        <div class="stat-label">Ketma-ket</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="stat-time">0m</div>
+                        <div class="stat-label">Vaqt</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yutuqlar -->
+            <div class="menu-section">
+                <h3>🏆 Yutuqlar</h3>
+                <div class="achievements-list" id="achievements-list">
+                    <div class="achievement locked" data-achievement="first">
+                        <span class="ach-icon">🌱</span>
+                        <span class="ach-text">Birinchi qadam</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="ten">
+                        <span class="ach-icon">🔟</span>
+                        <span class="ach-text">10 ta kashfiyot</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="combo5">
+                        <span class="ach-icon">🔥</span>
+                        <span class="ach-text">5x Combo</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="nature">
+                        <span class="ach-icon">🌿</span>
+                        <span class="ach-text">Tabiat ustasi</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="life">
+                        <span class="ach-icon">🧬</span>
+                        <span class="ach-text">Hayot yaratuvchi</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="food">
+                        <span class="ach-icon">👨‍🍳</span>
+                        <span class="ach-text">Oshpaz</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="tech">
+                        <span class="ach-icon">🤖</span>
+                        <span class="ach-text">Texnologiya kashshofi</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="fifty">
+                        <span class="ach-icon">⭐</span>
+                        <span class="ach-text">50 ta kashfiyot</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="level5">
+                        <span class="ach-icon">🎖️</span>
+                        <span class="ach-text">Daraja 5</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="level10">
+                        <span class="ach-icon">🏅</span>
+                        <span class="ach-text">Daraja 10</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="level25">
+                        <span class="ach-icon">🥇</span>
+                        <span class="ach-text">Daraja 25</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="level50">
+                        <span class="ach-icon">💎</span>
+                        <span class="ach-text">Daraja 50</span>
+                    </div>
+                    <div class="achievement locked" data-achievement="level100">
+                        <span class="ach-icon">👑</span>
+                        <span class="ach-text">Daraja 100</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Asosiy kontent -->
+    <div class="main-content">
+        <!-- Yuqori panel -->
+        <header class="game-header">
+            <div class="header-left">
+                <button class="btn-menu" id="btn-menu">☰</button>
+                <a href="/" class="logo-small">⚗️ <span class="logo-text-hide">Alkimiya UZ</span></a>
+            </div>
+            <div class="header-center">
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-icon">📦</span>
+                        <span class="stat-value" id="discovered-count">0</span>
+                        <span class="stat-label">/ 289</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="combo-display" id="combo-display">
+                    <span class="combo-fire">🔥</span>
+                    <span class="combo-number" id="combo-number">0x</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn-header" id="btn-daily-header" title="Kun elementi">
+                    <span>🌟</span>
+                </button>
+                <button class="btn-header" id="btn-random-header" title="Tasodifiy">
+                    <span>🎲</span>
+                </button>
+                <button class="btn-header" id="btn-hint-header" title="Maslahat">
+                    <span>💡</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Asosiy o'yin maydoni -->
+        <main class="game-main">
+            <!-- Elementlar paneli -->
+            <aside class="elements-panel" id="elements-panel">
+                <div class="panel-header">
+                    <h2>📦 Elementlar</h2>
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Qidirish...">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                    <div class="category-filters" id="category-filters">
+                        <button class="filter-btn active" data-category="all">Hammasi</button>
+                        <button class="filter-btn" data-category="asosiy">Asosiy</button>
+                        <button class="filter-btn" data-category="tabiat">Tabiat</button>
+                        <button class="filter-btn" data-category="osimlik">O'simlik</button>
+                        <button class="filter-btn" data-category="jonli">Jonli</button>
+                        <button class="filter-btn" data-category="inson">Inson</button>
+                        <button class="filter-btn" data-category="ovqat">Ovqat</button>
+                        <button class="filter-btn" data-category="qurilish">Qurilish</button>
+                        <button class="filter-btn" data-category="asbob">Asbob</button>
+                        <button class="filter-btn" data-category="kimyo">Kimyo</button>
+                        <button class="filter-btn" data-category="texnologiya">Texnologiya</button>
+                        <button class="filter-btn" data-category="sanat">San'at</button>
+                        <button class="filter-btn" data-category="tutilgan">Tutilgan</button>
+                    </div>
+                </div>
+                <div class="elements-grid" id="elements-grid">
+                </div>
+            </aside>
+
+            <!-- Ish maydoni -->
+            <div class="workspace" id="workspace">
+                <div class="workspace-bg">
+                    <div class="magic-circle"></div>
+                </div>
+                
+                <!-- Boss maydoni -->
+                <div class="boss-area" id="boss-area">
+                    <div class="boss-empty">Boss topish uchun ⚔️ tugmasini bosing</div>
+                </div>
+
+                <!-- Birlashtirish joyi -->
+                <div class="combine-zone" id="combine-zone">
+                    <div class="combine-slot" id="slot1" data-slot="1">
+                        <div class="slot-placeholder">
+                            <span>1-element</span>
+                        </div>
+                    </div>
+                    <div class="combine-plus">+</div>
+                    <div class="combine-slot" id="slot2" data-slot="2">
+                        <div class="slot-placeholder">
+                            <span>2-element</span>
+                        </div>
+                    </div>
+                    <div class="combine-equals">=</div>
+                    <div class="combine-result" id="combine-result">
+                        <div class="result-placeholder">
+                            <span>?</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-popup" id="result-popup">
+                    <div class="result-content">
+                        <div class="result-emoji" id="result-emoji"></div>
+                        <div class="result-name" id="result-name"></div>
+                        <div class="result-desc" id="result-desc"></div>
+                        <div class="result-new" id="result-new">YANGI KASHFIYOT!</div>
+                    </div>
+                </div>
+
+                <div class="workspace-elements" id="workspace-elements"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- Maslahat modali -->
+<div class="modal" id="hint-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>💡 Maslahat</h3>
+            <button class="modal-close" onclick="document.getElementById('hint-modal').classList.remove('show')">&times;</button>
+        </div>
+        <div class="modal-body" id="hint-content">
+            <p>Yuklanmoqda...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Element daraxti modali -->
+<div class="modal" id="tree-modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3>🧬 Element daraxti</h3>
+            <button class="modal-close" onclick="window.features.closeTreeModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="tree-content">
+        </div>
+    </div>
+</div>
+
+<!-- Tezlik mashqi modali -->
+<div class="modal" id="speed-modal">
+    <div class="modal-content speed-popup">
+        <h3>⏱️ Tezlik mashqi</h3>
+        <div class="speed-timer">
+            <div class="speed-timer-fill"></div>
+        </div>
+        <div class="speed-display">
+            <div class="speed-time" id="speed-time">60</div>
+            <div class="speed-label">soniya</div>
+        </div>
+        <div class="speed-score-display">
+            <div class="speed-score" id="speed-score">0</div>
+            <div class="speed-label">birlashtirish</div>
+        </div>
+        <div class="speed-result" id="speed-result"></div>
+        <button class="menu-btn" onclick="window.features.closeSpeedChallenge()">Yopish</button>
+    </div>
+</div>
+
+<!-- Ensiklopediya modali -->
+<div class="modal" id="encyclopedia-modal">
+    <div class="modal-content modal-large">
+        <div class="modal-header">
+            <h3>📖 Ensiklopediya</h3>
+            <button class="modal-close" onclick="window.features.closeEncyclopedia()">&times;</button>
+        </div>
+        <div class="modal-body" id="encyclopedia-content">
+        </div>
+    </div>
+</div>
+
+<!-- Boss g'alaba modali -->
+<!-- Kun elementi modali -->
+<div class="modal" id="daily-modal">
+    <div class="modal-content daily-popup">
+        <div class="daily-big-icon">🌟</div>
+        <h3>Bugungi Element</h3>
+        <div class="daily-big-emoji" id="daily-big-emoji"></div>
+        <div class="daily-big-name" id="daily-big-name"></div>
+        <div class="daily-big-desc" id="daily-big-desc"></div>
+        <button class="menu-btn" id="btn-daily-close">Yaxshi!</button>
+    </div>
+</div>
+
+<!-- Boss urushi modali -->
+<div class="modal" id="boss-modal">
+    <div class="modal-content boss-popup">
+        <h3>⚔️ Boss Urushi</h3>
+        <div class="boss-fight-area" id="boss-fight-area"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/sounds.js') }}"></script>
+<script src="{{ url_for('static', filename='js/particles.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dragdrop.js') }}"></script>
+<script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+<script src="{{ url_for('static', filename='js/features.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ai.js') }}"></script>
+<script src="{{ url_for('static', filename='js/extras.js') }}"></script>
+{% endblock %}

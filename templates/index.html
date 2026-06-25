@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Alkimiya UZ - Elementlarni Birlashtiring{% endblock %}
+
+{% block content %}
+<div class="landing">
+    <div class="particles" id="particles"></div>
+    
+    <div class="landing-content">
+        <div class="logo-container">
+            <div class="logo-glow"></div>
+            <h1 class="logo-text">
+                <span class="logo-icon">⚗️</span>
+                <span class="logo-main">Alkimiya</span>
+                <span class="logo-sub">UZ</span>
+            </h1>
+            <p class="tagline">Elementlarni birlashtiring, olamni kashf eting!</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🌍</div>
+                <h3>289+ Element</h3>
+                <p>Asosiy 4 ta elementdan boshlang va yuzlab yangi elementlarni kashf eting</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🧬</div>
+                <h3>209 Kombinatsiya</h3>
+                <p>Har xil kombinatsiyalar bilan noyob narsalar yarating</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">✨</div>
+                <h3>Ajoyib Animatsiyalar</h3>
+                <p>Har bir kashfiyot yangi vizual tajriba bilan birga keladi</p>
+            </div>
+        </div>
+
+        <a href="/game" class="start-btn">
+            <span>O'YINNI BOSHLASH</span>
+            <div class="btn-glow"></div>
+        </a>
+
+        <div class="share-row">
+            <a href="https://t.me/share/url?url=https://alkimiya-uz.onrender.com&text=Alkimiya%20UZ%20-%20Elementlarni%20birlashtiring%2C%20olamni%20kashf%20eting!%20%F0%9F%8E%86" target="_blank" class="share-btn telegram">
+                <span>✈️</span> Telegramda ulash
+            </a>
+            <button class="share-btn copy-link" onclick="copyLink()">
+                <span>🔗</span> Linkni nusxalash
+            </button>
+        </div>
+
+        <div class="author-badge">
+            <span class="author-icon">👨‍💻</span>
+            <div class="author-info">
+                <span class="author-label">Muallif</span>
+                <span class="author-name">Rasulov Oybek</span>
+            </div>
+        </div>
+
+        <div class="floating-elements">
+            <span class="float-el" style="--delay: 0s; --x: 10%; --y: 20%;">🔥</span>
+            <span class="float-el" style="--delay: 1s; --x: 80%; --y: 15%;">💧</span>
+            <span class="float-el" style="--delay: 2s; --x: 15%; --y: 70%;">🌍</span>
+            <span class="float-el" style="--delay: 3s; --x: 75%; --y: 75%;">🌬️</span>
+            <span class="float-el" style="--delay: 0.5s; --x: 50%; --y: 10%;">⭐</span>
+            <span class="float-el" style="--delay: 1.5s; --x: 90%; --y: 50%;">🌿</span>
+            <span class="float-el" style="--delay: 2.5s; --x: 5%; --y: 50%;">💎</span>
+            <span class="float-el" style="--delay: 3.5s; --x: 60%; --y: 85%;">🔮</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function createParticles() {
+        var container = document.getElementById('particles');
+        for (var i = 0; i < 50; i++) {
+            var particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 3 + 's';
+            particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            container.appendChild(particle);
+        }
+    }
+    createParticles();
+
+    function copyLink() {
+        var url = window.location.href;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(function() {
+                var btn = document.querySelector('.copy-link');
+                btn.innerHTML = '<span>✅</span> Nusxalandi!';
+                setTimeout(function() {
+                    btn.innerHTML = '<span>🔗</span> Linkni nusxalash';
+                }, 2000);
+            });
+        } else {
+            var input = document.createElement('input');
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            var btn = document.querySelector('.copy-link');
+            btn.innerHTML = '<span>✅</span> Nusxalandi!';
+            setTimeout(function() {
+                btn.innerHTML = '<span>🔗</span> Linkni nusxalash';
+            }, 2000);
+        }
+    }
+</script>
+{% endblock %}

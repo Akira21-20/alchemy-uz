@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}Alkimiya UZ{% endblock %}</title>
+    <meta name="description" content="Alkimiya UZ - Elementlarni birlashtiring, olamni kashf eting! 289+ element, 209 kombinatsiya.">
+    <meta property="og:title" content="Alkimiya UZ - Elementlar O'yini">
+    <meta property="og:description" content="Elementlarni birlashtiring, olamni yarating! 289+ element, 209 kombinatsiya, boss urushlari va ko'p narsalar.">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Loading Screen -->
+    {% block loading_screen %}
+    <div class="loading-screen" id="loading-screen">
+        <div class="loading-content">
+            <div class="loading-elements">
+                <span class="loading-el el1">🌍</span>
+                <span class="loading-el el2">💧</span>
+                <span class="loading-el el3">🔥</span>
+                <span class="loading-el el4">🌬️</span>
+            </div>
+            <div class="loading-circle">
+                <div class="loading-ring"></div>
+                <div class="loading-ring-inner"></div>
+            </div>
+            <h1 class="loading-title">Alkimiya UZ</h1>
+            <p class="loading-subtitle">Elementlarni birlashtiring, olamni yarating...</p>
+            <div class="loading-bar">
+                <div class="loading-bar-fill" id="loading-bar-fill"></div>
+            </div>
+            <p class="loading-percent" id="loading-percent">0%</p>
+            <div class="loading-phases" id="loading-phases">
+                <span class="loading-phase active" id="phase1">🌍 Elementlar yuklanmoqda...</span>
+                <span class="loading-phase" id="phase2">⚗️ Kombinatsiyalar tayyorlanmoqda...</span>
+                <span class="loading-phase" id="phase3">✨ Sirlar ochilmoqda...</span>
+                <span class="loading-phase" id="phase4">🎮 Tayyor!</span>
+            </div>
+        </div>
+        <div class="loading-particles" id="loading-particles"></div>
+    </div>
+    {% endblock %}
+
+    {% block content %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/game.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+
+    <script>
+    (function() {
+        var loadingScreen = document.getElementById('loading-screen');
+        var loadingBar = document.getElementById('loading-bar-fill');
+        var loadingPercent = document.getElementById('loading-percent');
+        var loadingParticles = document.getElementById('loading-particles');
+        var progress = 0;
+        var pageLoaded = false;
+        var minTimePassed = false;
+
+        var TOTAL_DURATION = 10000;
+        var CHECK_INTERVAL = 50;
+        var TOTAL_STEPS = TOTAL_DURATION / CHECK_INTERVAL;
+
+        if (loadingParticles) {
+            for (var i = 0; i < 40; i++) {
+                var p = document.createElement('div');
+                p.className = 'loading-particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.top = Math.random() * 100 + '%';
+                p.style.animationDelay = Math.random() * 6 + 's';
+                p.style.animationDuration = (3 + Math.random() * 5) + 's';
+                p.textContent = ['✨', '⭐', '🌟', '💫', '✦', '⚡'][Math.floor(Math.random() * 6)];
+                loadingParticles.appendChild(p);
+            }
+        }
+
+        function updateProgress() {
+            progress += (100 / TOTAL_STEPS);
+            if (progress > 99) progress = 99;
+            loadingBar.style.width = progress + '%';
+            loadingPercent.textContent = Math.floor(progress) + '%';
+
+            if (progress > 20) {
+                document.getElementById('phase1').classList.remove('active');
+                document.getElementById('phase1').classList.add('done');
+                document.getElementById('phase2').classList.add('active');
+            }
+            if (progress > 50) {
+                document.getElementById('phase2').classList.remove('active');
+                document.getElementById('phase2').classList.add('done');
+                document.getElementById('phase3').classList.add('active');
+            }
+            if (progress > 85) {
+                document.getElementById('phase3').classList.remove('active');
+                document.getElementById('phase3').classList.add('done');
+                document.getElementById('phase4').classList.add('active');
+            }
+        }
+
+        var progressInterval = setInterval(updateProgress, CHECK_INTERVAL);
+
+        setTimeout(function() {
+            minTimePassed = true;
+            tryFinish();
+        }, TOTAL_DURATION);
+
+        window.addEventListener('load', function() {
+            pageLoaded = true;
+        });
+
+        function tryFinish() {
+            if ((pageLoaded && minTimePassed) || minTimePassed) {
+                clearInterval(progressInterval);
+                loadingBar.style.width = '100%';
+                loadingPercent.textContent = '100%';
+                document.getElementById('phase4').classList.add('done');
+
+                setTimeout(function() {
+                    loadingScreen.classList.add('hide');
+                    setTimeout(function() { loadingScreen.remove(); }, 1000);
+                }, 600);
+            }
+        }
+    })();
+    </script>
+</body>
+</html>
